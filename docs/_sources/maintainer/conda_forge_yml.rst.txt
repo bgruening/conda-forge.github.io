@@ -112,10 +112,9 @@ build platform using cross-compiling.
 channel_priority
 ----------------
 
-This value sets the ``conda`` solver channel priority for feedstock builds. On
-OSX and Liunx, it defaults to ``strict``. On Windows, it defaults to the default in
-``conda`` (``flexible`` at the time of writing). Any valid value for the same setting
-in the ``.condarc`` is allowed here.
+This value sets the ``conda`` solver channel priority for feedstock builds. 
+The default is ``strict``. Any valid value for the same setting in the ``.condarc`` is
+allowed here.
 
 channels
 --------
