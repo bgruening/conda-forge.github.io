@@ -59,7 +59,7 @@ If you found a typo, unclear explanations or new topics that could be covered, y
 Admin web services
 ==================
 
-conda-forge is running a webservice on Heroku called `conda-forge-webservices <https://github.com/conda-forge/conda-forge-webservices>`_.
+Conda-forge is running a webservice on Heroku called `conda-forge-webservices <https://github.com/conda-forge/conda-forge-webservices>`_.
 
 The following services are run by default on a feedstock:
 
@@ -284,7 +284,7 @@ To skip a CI build for a given commit, put ``[ci skip] ***NO_CI***`` in the comm
 
 .. admonition:: Related links
 
-  - **abort builds with [skip ci]/etc** `(conda-forge.github.io/#629) <https://github.com/conda-forge/conda-forge.github.io/issues/629>`__
+  - **Abort builds with [skip ci]/etc** `(conda-forge.github.io/#629) <https://github.com/conda-forge/conda-forge.github.io/issues/629>`__
   - **Skip CI requests** `(staged-recipes/#1148) <https://github.com/conda-forge/staged-recipes/issues/1148>`__
 
 
