@@ -19,10 +19,23 @@ On Windows, you can also use ``nmake`` to build, but that does not need to be ex
         - make  # [not win]
         - ninja  # [win]
 
-For CMake projects using the `FindPython3 <https://cmake.org/cmake/help/git-stage/module/FindPython3.html>`__
-module, you can tell CMake which Python to use by passing ``-DPython3_EXECUTABLE="$PYTHON"``
-(macOS or Linux) or ``-DPython3_EXECUTABLE="%PYTHON%"`` (Windows) as a command line option.
+For CMake projects using the `FindPython <https://cmake.org/cmake/help/git-stage/module/FindPython.html>`__
+module, you can tell CMake which Python to use by passing ``-DPython_EXECUTABLE="$PYTHON"``
+(macOS or Linux) or ``-DPython_EXECUTABLE="%PYTHON%"`` (Windows) as a command line option.
 Older CMake projects may require similar, but slightly different options.
+
+.. tip::
+
+    Don't forget that depending on which CMake module you use you have to use a different command:
+
+    -   `FindPython <https://cmake.org/cmake/help/git-stage/module/FindPython.html>`__:
+        ``-DPython_EXECUTABLE=...``.
+    -   `FindPython3 <https://cmake.org/cmake/help/git-stage/module/FindPython3.html>`__:
+        ``-DPython3_EXECUTABLE=...``.
+    -   `FindPython2 <https://cmake.org/cmake/help/git-stage/module/FindPython2.html>`__:
+        ``-DPython2_EXECUTABLE=...``.
+
+    or if you are still on the deprecated `FindPythonLibs <https://cmake.org/cmake/help/latest/module/FindPythonLibs.html>`__: ``-DPYTHON_EXECUTABLE=...``.
 
 Some optional, but useful CMake options:
 
@@ -33,7 +46,7 @@ Some optional, but useful CMake options:
       into lib64 or similar but on conda-forge we keep shared libraries in simply lib.
     - ``-DBUILD_SHARED_LIBS=ON`` Instruct CMake to build shared libraries instead of static ones.
 
-Here are some basic commands to get you started. These are dependent on your source
+Here are some basic commands for you to get started. These are dependent on your source
 code layout and aren't intended to be used "as is".
 
 **CMake lines for build.sh (macOS/Linux):**
@@ -124,7 +137,7 @@ environment, you can save a lot of time and bandwidth by installing standalone
   <https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2017>`_.
 
 If you need more information. Please refer `the Python wiki page on Windows compilers
-<https://wiki.python.org/moin/WindowsCompilers>`.
+<https://wiki.python.org/moin/WindowsCompilers>`_.
 
 Simple CMake-Based ``bld.bat``
 ------------------------------
@@ -190,7 +203,36 @@ To skip building with a particular ``vc`` version, add a skip statement.
       build:
         - {{ compiler('cxx') }}
 
+Using vs2019
+-------------
 
+To use ``vs2019`` make the following changes:
+
+In conda_build_config.yaml file:
+
+.. code-block:: yaml
+
+    c_compiler:
+    - vs2019
+    cxx_compiler:
+    - vs2019
+
+
+In conda-forge.yml file:
+
+.. code-block:: yaml
+
+    azure:
+      settings_win:
+          pool:
+              vmImage: windows-2019
+
+
+
+For example see the changes made in the ``conda_build_config.yaml`` and ``conda-forge.yml`` files in `this
+<https://github.com/conda-forge/libignition-physics-feedstock/commit/c586d765a2f5fd0ecf6da43c53315c898c9bf6bd>`_ PR.
+
+After making these changes don't forget to rerender with ``conda-smithy`` (to rerender manually use ``conda smithy rerender`` from the command line).
 
 Special Dependencies and Packages
 =================================
@@ -230,12 +272,12 @@ Core Dependency Tree Packages (CDTs)
 ------------------------------------
 
 Dependencies outside of the ``conda-forge`` channel should be avoided (see :ref:`no_external_deps`).
-However, there are a few exceptions: 
+However, there are a few exceptions:
 
-Some dependencies are so close to the system that they are not packaged with ``conda-forge``. 
-These dependencies have to be satisfied with *Core Dependency Tree* (CDT) packages. 
+Some dependencies are so close to the system that they are not packaged with ``conda-forge``.
+These dependencies have to be satisfied with *Core Dependency Tree* (CDT) packages.
 
-A CDT package consists of repackaged CentOS binaries from the appropriate version, 
+A CDT package consists of repackaged CentOS binaries from the appropriate version,
 either 6 or 7 depending on user choice and platform. We manage the build of CDT
 packages using a centralized repo, `conda-forge/cdt-builds <https://github.com/conda-forge/cdt-builds>`_,
 as opposed to generating feedstocks for them. (Note that historically we did use feedstocks but this
@@ -944,7 +986,7 @@ Build matrices
 
 Currently, ``python, vc, r-base`` will create a matrix of jobs for each supported version. If ``python`` is only a
 build dependency and not a runtime dependency (eg: build script of the package is written in Python, but the
-package is not dependent on python), use ``build`` section
+package is not dependent on Python), use ``build`` section
 
 Following implies that ``python`` is only a build dependency and no Python matrix will be created.
 
@@ -959,7 +1001,7 @@ Following implies that ``python`` is only a build dependency and no Python matri
 Note that ``host`` should be non-empty or ``compiler`` jinja syntax used or ``build/merge_build_host`` set to
 True for the ``build`` section to be treated as different from ``host``.
 
-Following implies that ``python`` is a runtime dependency and a Python matrix for each supported python version will be created.
+Following implies that ``python`` is a runtime dependency and a Python matrix for each supported Python version will be created.
 
 .. code-block:: yaml
 
@@ -1240,6 +1282,21 @@ For now, you will have to add ``nvcuda.dll`` to the ``missing_dso_whitelist``::
     ...
     missing_dso_whitelist:
       - "*/nvcuda.dll"   # [win]
+
+
+My feedstock is not building old CUDA versions anymore
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With the `addition of CUDA 11.1 and 11.2 <https://github.com/conda-forge/conda-forge-pinning-feedstock/pull/1162>`_,
+the default build matrix for CUDA versions was trimmed down to versions 10.2, 11.0, 11.1, 11.2.
+
+If you really need it, you can re-add support for 9.2, 10.0 and 10.1. However, this is not recommended.
+Adding more CUDA versions to the build matrix will dramatically increase the number of jobs and will place a large
+burden on our CI resources. Only proceed if there's a known use case for the extra packages.
+
+1. Download this `migration file <https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/migrations/cuda92_100_101.yaml>`_.
+2. In your feedstock fork, create a new branch and place the migration file under ``.ci_support/migrations``.
+3. Open a PR and re-render. CUDA 9.2, 10.0 and 10.1 will appear in the CI checks now. Merge when ready!
 
 
 Adding support for a new CUDA version
